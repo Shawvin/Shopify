@@ -9,19 +9,27 @@
 
 library(shiny)
 library(shinyjs)
-dat<-read.csv("apps.csv")
-icons<-unique(dat$icon)
+library(tidyverse)
+dat<-read.csv("apps.csv", encoding="UTF-8")
+
+dat2<-dat[,c(3,6)] %>% unique()
+icons<-dat2$icon[1:100]
+names(icons)<-sapply(1:length(icons), function(x) paste("id",x, sep=""))
+
+titles<-dat2$title[1:100]
+names(titles)<-names(icons)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
     output$image1<- renderUI({
         
-        imgurl <- icons[1:4750]
+        imgurl <- icons
+        
         
         imgfr <- lapply(imgurl, function(file){
-            tags$div(id=file,
-                tags$img(src=file, width=84, height=84)
-               # tags$script(src="titlescript.js")
+            tags$div(id=names(file),
+                tags$img(src=file, width=168, height=168),
+               tags$figcaption(titles[names(file)], style="display: table-caption; font: bold;")
             )
             
         })
@@ -30,28 +38,18 @@ shinyServer(function(input, output, session) {
             style = "
         width: auto;
         height: auto;
-        margin: 5px;
+        margin: 8px;
         ")
         
         do.call(flowLayout, imgfr)
-    #    do.call(tagList, imgfr)
-        #div(id = "myImage",
-         #   tags$img(src = imgurl, width = 84, height = 84)
-        #)
     })
     
-    lapply(X = dat$icon[1:10], FUN = function(id) {
+    
+    lapply(X = names(icons), FUN = function(id) {
         onclick(id, {
             print(id)
         })
     })
     
-    # onclick(
-    #     "file", 
-    #     { 
-    #         # Do whatever you want!
-    #         print("Hey there")
-    #     }
-    # )
-   
+ 
 })
