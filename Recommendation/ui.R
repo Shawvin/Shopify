@@ -20,10 +20,13 @@ shinyUI(fluidPage(
     #                                                      )),
     
     #selectInput("search", "Select category", choices =c("all",categories$app_category)),
-    selectInput("userid", "Recommendation for ", choices ="newuser"),
+    
+    #define the dropdown list of user
+    selectInput("userid", "Recommendation for ", choices =c("newuser1","newuser2")),
     #selectInput("userid", "Recommendation for ", choices =c("newuser", rownames(users_matrix))),
                 
     uiOutput("image1", click = "myImage")
+    
     # fluidRow(
     #   column(15,uiOutput("image1", click = "myImage"))
     # )

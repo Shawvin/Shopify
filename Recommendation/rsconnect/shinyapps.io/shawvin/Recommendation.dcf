@@ -5,8 +5,8 @@ account: shawvin
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3231267
-bundleId: 3859581
+bundleId: 3862920
 url: https://shawvin.shinyapps.io/Recommendation/
-when: 1605344595.84146
+when: 1605445481.77495
 asMultiple: FALSE
 asStatic: FALSE
