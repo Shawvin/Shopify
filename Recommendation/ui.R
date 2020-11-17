@@ -9,6 +9,8 @@
 
 library(shiny)
 library(shinyjs)
+##load activeuser name for display
+load("activeuser_list.Rdata")
 
 shinyUI(fluidPage(
     useShinyjs(),
@@ -22,11 +24,16 @@ shinyUI(fluidPage(
     #selectInput("search", "Select category", choices =c("all",categories$app_category)),
     
     #define the dropdown list of user
-    selectInput("userid", "Recommendation for ", choices =c("newuser1","newuser2")),
-    #selectInput("userid", "Recommendation for ", choices =c("newuser", rownames(users_matrix))),
-                
-    uiOutput("image1", click = "myImage")
+    #selectInput("userid", "Recommendation for ", choices =c("newuser1","newuser2")),
+    selectInput("userid", "Recommendation for ", choices =c("newuser", sample(activeuser_list, 50))),
     
+    h4(textOutput("text1"),align="center"),            
+    
+    uiOutput("image1", click = "myImage"),
+    
+    h4(textOutput("text2"),align="center"),            
+    
+    uiOutput("image2")
     # fluidRow(
     #   column(15,uiOutput("image1", click = "myImage"))
     # )

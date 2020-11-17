@@ -14,7 +14,7 @@ library(tidyverse)
 # Define server logic for main panel
 shinyServer(function(input, output, session) {
     ##the app_icon file have been saved, it have the url for icon, title, rating and tagline for app display
-    app_icons<-read.csv("app_icon.csv", stringsAsFactors = TRUE)
+    load("app_icons.Rdata")
     
     ##the icon url for displaying 
     icons<-app_icons$icon
@@ -28,28 +28,45 @@ shinyServer(function(input, output, session) {
     ##assign names for easy reference
     names(titles)<-names(icons)
     
+    ##the abbr_id
+    abbre_id<-names(icons)
+    
+    ##
+    names(abbre_id)<-app_icons$id    
+        
     ##create new user recommendation list
     load("recom_newuser.Rdata")
     
+    ##reactive to user id input for recommend reason
+    reason<-reactive(
+        ## input id is newuser
+        if (input$userid=="newuser")
+            "The recommendation is based on rating and review count"
+        ## input id is active user
+        else
+            "The recommendation is based on user rating history"
+    )
+    
+    load("top32.Rdata")
     ##reactive to user id input for default display
     index<-reactive(
         ## input id is newuser
-        if (input$userid=="newuser1"|input$userid=="newuser2"){
-            order(app_icons$rating, decreasing = TRUE)[1:100]
+        if (input$userid=="newuser"){
+            order(app_icons$rating, app_icons$reviews_count, decreasing = TRUE)[1:32]
             #recom_list<-newuser_recom_list
         }
         ## input id is active user
         else {
-            order(app_icons$rating, decreasing = TRUE)[1:100]
-            #order(app_icons[,input$userid], decreasing = TRUE)[1:100]
-            #recom_list<-newuser_recom_list
+            abbre_id_names<<-top32$app_id[top32$user_id==input$userid]
+            abbre_id[abbre_id_names]
+            
         }
     )
     
     ##reactive to user_id for app similarity display
     recom_list<-reactive(
         ## input id is newuser
-        if (input$userid=="newuser1"|input$userid=="newuser2"){
+        if (input$userid=="newuser"){
             newuser_recom_list
         }
         ## input id is active user
@@ -59,6 +76,11 @@ shinyServer(function(input, output, session) {
             newuser_recom_list
         }
     )
+    
+    output$text1<-renderText(
+        reason()
+    )
+    
     output$image1<- renderUI({
         ## obtain the list of url
         imgurl <- icons[index()]
@@ -69,7 +91,6 @@ shinyServer(function(input, output, session) {
                 tags$img(src=file, width=168, height=168),
                tags$figcaption(titles[names(file)], style="display: table-caption; font-weight:bold;")
             )
-            
         })
         
         ## arguments for the images
@@ -95,7 +116,7 @@ shinyServer(function(input, output, session) {
                 HTML("<br>"),
                 app_icons[app_icons$titles==titles[id],"tagline"],
                 HTML("<br><br><br>"),
-                HTML('<p style="font-size:15px;font-weight:bold"> You may like: </p>' ),
+                HTML('<p style="font-size:15px;font-weight:bold"> Similar apps to the one above: </p>' ),
                 HTML(paste("<img src=", icons[recom_list()[[id]][1]], ">", sep="")),
                 titles[recom_list()[[id]][1]],
                 HTML("<br><br>"),
@@ -116,6 +137,50 @@ shinyServer(function(input, output, session) {
             ))
         })
     })
+    
+    output$text2<-renderText(
+        "History:"
+    )
+    
+    ##load history_table for user
+    load("history_table.Rdata")
+    
+    
+    index2<-reactive(
+        ## input id is newuser
+        if (input$userid=="newuser")
+            "id1"
+        ## input id is active user
+        else {
+            abbre_id_names<-history_table$app_id[history_table$author==input$userid]
+            abbre_id[abbre_id_names]
+        }
+    )
+    
+    ##Display History of user
+    output$image2<- renderUI({
+        ## obtain the list of url
+        imgurl <- icons[index2()]
+        
+        ## create image and caption(title) for each url
+        imgfr <- lapply(imgurl, function(file){
+            tags$div(id2=names(file),
+                     tags$img(src=file, width=84, height=84),
+                     tags$figcaption(titles[names(file)], style="display: table-caption; font-weight:bold;")
+            )
+        })
+        
+        ## arguments for the images
+        imgfr$cellArgs <- list(
+            style = "
+        width: auto;
+        height: auto;
+        margin: 8px;
+        ")
+        
+        do.call(flowLayout, imgfr)
+    })
+    
     
  
 })
